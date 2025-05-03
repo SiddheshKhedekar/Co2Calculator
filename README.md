@@ -29,7 +29,7 @@ The tool requires an API key for OpenRouteService. Store it in an environment va
     `mvn clean install`
 
 4. **Run the Application**:
-  - In IntelliJ, right-click on the main class `Co2CalculatorApplication.java` (inside the `src/main/java/com/sapchallenge/co2calculator` directory).
+  - In IntelliJ, right-click on the main class `Co2CalculatorApplication.java` (inside the `src/main/java/com/siddhesh/co2calculator` directory).
   - Select `Run 'Co2CalculatorApplication'`.
 
 5. **Test the Application**:
