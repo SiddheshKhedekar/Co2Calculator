@@ -1,4 +1,4 @@
-package com.siddhesh;
+package com.siddhesh.co2calculator;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

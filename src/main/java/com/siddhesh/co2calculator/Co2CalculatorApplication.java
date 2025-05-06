@@ -1,4 +1,4 @@
-package com.siddhesh;
+package com.siddhesh.co2calculator;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
