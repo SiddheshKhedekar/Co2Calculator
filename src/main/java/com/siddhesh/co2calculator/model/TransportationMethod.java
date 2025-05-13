@@ -13,6 +13,14 @@ public class TransportationMethod {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-generates the ID for the entity
     private Long id;
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     private String name; // Name of the transportation method
     private double co2EmissionPerKm; // CO2 emission per kilometer for the transportation method
 
