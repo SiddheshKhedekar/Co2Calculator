@@ -110,6 +110,40 @@ public class GeoServiceTest {
     }
 
     @Test
+    public void testGetCityCoordinates_MultipleFeatures() {
+        String jsonResponse = "{ \"features\": [ { \"geometry\": { \"coordinates\": [13.405, 52.52] } }, { \"geometry\": { \"coordinates\": [2.3522, 48.8566] } } ] }";
+        when(restTemplate.getForObject(anyString(), eq(String.class))).thenReturn(jsonResponse);
+
+        // Testing if the first city coordinates (Berlin) are returned correctly
+        CityCoordinates coords = geoService.getCityCoordinates("Berlin");
+
+        assertEquals(13.405, coords.getLatitude());
+        assertEquals(52.52, coords.getLongitude());
+    }
+
+    @Test
+    public void testGetCityCoordinates_MalformedJson() {
+        when(restTemplate.getForObject(anyString(), eq(String.class))).thenReturn("{ \"features\": [ { \"geometry\": { \"coordinates\": \"not-an-array\" } } ] }");
+
+        JSONException exception = assertThrows(JSONException.class, () -> {
+            geoService.getCityCoordinates("Berlin");
+        });
+
+        assertTrue(exception.getMessage().contains("coordinates"));
+    }
+
+    @Test
+    public void testGetCityCoordinates_EmptyResponse() {
+        when(restTemplate.getForObject(anyString(), eq(String.class))).thenReturn("");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            geoService.getCityCoordinates("Berlin");
+        });
+
+        assertEquals("Invalid response from API", exception.getMessage());
+    }
+
+    @Test
     public void testGetDistanceBetweenCities_Valid() {
         CityCoordinates start = new CityCoordinates(13.4050, 52.5200); // Berlin
         CityCoordinates end = new CityCoordinates(11.5820, 48.1351);   // Munich
