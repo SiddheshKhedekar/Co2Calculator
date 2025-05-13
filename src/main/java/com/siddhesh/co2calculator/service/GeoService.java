@@ -101,8 +101,4 @@ public class GeoService {
             throw new RestClientException("Failed to fetch distance. API may be down.");
         }
     }
-
-    public void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
-    }
 }
