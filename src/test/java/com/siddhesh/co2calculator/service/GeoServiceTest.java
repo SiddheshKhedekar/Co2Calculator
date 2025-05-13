@@ -3,10 +3,17 @@ package com.siddhesh.co2calculator.service;
 import com.siddhesh.co2calculator.exception.CityNotFoundException;
 import com.siddhesh.co2calculator.exception.MissingApiKeyException;
 import com.siddhesh.co2calculator.model.CityCoordinates;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,6 +42,24 @@ public class GeoServiceTest {
         assertEquals("API key is missing. Set the ORS_TOKEN environment variable.", exception.getMessage());
     }
 
+    @Test
+    public void testGetCityCoordinates_NullCity() {
+        CityNotFoundException exception = assertThrows(CityNotFoundException.class, () -> {
+            geoService.getCityCoordinates(null);
+        });
+
+        assertEquals("City name cannot be empty.", exception.getMessage());
+    }
+
+    @Test
+    public void testGetCityCoordinates_EmptyCity() {
+        CityNotFoundException exception = assertThrows(CityNotFoundException.class, () -> {
+            geoService.getCityCoordinates(" ");
+        });
+
+        assertEquals("City name cannot be empty.", exception.getMessage());
+    }
+
     // Test to check if the service throws an exception for invalid city input
     @Test
     public void testGetCityCoordinates_InvalidCity() {
@@ -45,6 +70,29 @@ public class GeoServiceTest {
         });
 
         assertEquals("City 'InvalidCity' not found.", exception.getMessage());
+    }
+
+    @Test
+    public void testGetCityCoordinates_ApiReturnsNull() {
+        when(restTemplate.getForObject(anyString(), eq(String.class))).thenReturn(null);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            geoService.getCityCoordinates("Berlin");
+        });
+
+        assertEquals("Invalid response from API", exception.getMessage());
+    }
+
+    @Test
+    public void testGetCityCoordinates_HttpClientErrorException() {
+        when(restTemplate.getForObject(anyString(), eq(String.class)))
+                .thenThrow(HttpClientErrorException.class);
+
+        CityNotFoundException exception = assertThrows(CityNotFoundException.class, () -> {
+            geoService.getCityCoordinates("Berlin");
+        });
+
+        assertEquals("City not found or invalid API response.", exception.getMessage());
     }
 
     // Test to check if the service returns correct coordinates for a valid city
@@ -59,5 +107,37 @@ public class GeoServiceTest {
 
         assertEquals(13.405, coords.getLatitude());
         assertEquals(52.52, coords.getLongitude());
+    }
+
+    @Test
+    public void testGetDistanceBetweenCities_Valid() {
+        CityCoordinates start = new CityCoordinates(13.4050, 52.5200); // Berlin
+        CityCoordinates end = new CityCoordinates(11.5820, 48.1351);   // Munich
+
+        String jsonResponse = "{ \"distances\": [[0, 584000]] }"; // e.g., 584 km
+
+        when(restTemplate.exchange(
+                eq("https://api.openrouteservice.org/v2/matrix/driving-car"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                eq(String.class)
+        )).thenReturn(new ResponseEntity<>(jsonResponse, HttpStatus.OK));
+
+        double distance = geoService.getDistanceBetweenCities(start, end);
+
+        assertEquals(584.0, distance); // Because we divided by 1000 in the method
+    }
+
+    @Test
+    public void testGetDistanceBetweenCities_HttpClientErrorException() {
+        CityCoordinates start = new CityCoordinates(13.405, 52.52);
+        CityCoordinates end = new CityCoordinates(9.993, 53.551);
+
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(HttpClientErrorException.class);
+
+        assertThrows(Exception.class, () -> {
+            geoService.getDistanceBetweenCities(start, end);
+        });
     }
 }
