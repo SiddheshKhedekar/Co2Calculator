@@ -4,7 +4,6 @@ import com.siddhesh.co2calculator.exception.CityNotFoundException;
 import com.siddhesh.co2calculator.exception.MissingApiKeyException;
 import com.siddhesh.co2calculator.model.CityCoordinates;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
