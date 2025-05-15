@@ -73,6 +73,8 @@ public class Co2CalculatorControllerTest {
         // Mock the response for successful CO2 emission calculation
         double distance = 300.0; // Example distance in km
         double co2Emission = 49.2; // Example CO2 emission
+
+        when(geoService.getDistanceBetweenCities(hamburg, berlin)).thenReturn(distance);
         when(co2CalculatorService.calculateCo2Emission(distance, "diesel-car-medium")).thenReturn(co2Emission);
 
         // Perform the test by calling the controller method with valid data
@@ -81,8 +83,7 @@ public class Co2CalculatorControllerTest {
                         .param("end", "Berlin")
                         .param("transportation-method", "diesel-car-medium"))
                 .andExpect(status().isOk()) // Expect HTTP 200 (OK)
-                //.andExpect(jsonPath("$.response").value("Your trip caused 49.2kg of CO2-equivalent.")); // Validate the response message
-                .andExpect(jsonPath("$.response").value("Your trip caused 0.0kg of CO2-equivalent.")); // Validate the response message
+                .andExpect(jsonPath("$.response").value("Your trip caused 49.2kg of CO2-equivalent.")); // Validate the response message
     }
 
     @Test
