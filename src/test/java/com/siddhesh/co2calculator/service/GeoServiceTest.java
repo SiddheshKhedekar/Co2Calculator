@@ -83,6 +83,15 @@ public class GeoServiceTest {
     }
 
     @Test
+    public void testBlankApiKey() {
+        MissingApiKeyException exception = assertThrows(MissingApiKeyException.class, () -> {
+            new GeoService("   ", restTemplate); // Blank API key with spaces
+        });
+
+        assertEquals("API key is missing. Set the ORS_TOKEN environment variable.", exception.getMessage());
+    }
+
+    @Test
     public void testGetCityCoordinates_HttpClientErrorException() {
         when(restTemplate.getForObject(anyString(), eq(String.class)))
                 .thenThrow(HttpClientErrorException.class);
@@ -140,6 +149,20 @@ public class GeoServiceTest {
         });
 
         assertEquals("Invalid response from API", exception.getMessage());
+    }
+
+    @Test
+    public void testGetCityCoordinates_FeaturesKeyMissing() {
+        // Simulate a JSON response without the "features" key
+        String jsonResponse = "{ \"type\": \"FeatureCollection\" }";
+
+        when(restTemplate.getForObject(anyString(), eq(String.class))).thenReturn(jsonResponse);
+
+        CityNotFoundException exception = assertThrows(CityNotFoundException.class, () -> {
+            geoService.getCityCoordinates("Berlin");
+        });
+
+        assertEquals("City 'Berlin' not found.", exception.getMessage());
     }
 
     @Test
